@@ -17,6 +17,25 @@ Bullet::Bullet(QPoint startPos, QPoint targetPoint, int damage, Enemy *target,
     , m_damage(damage)
 {}//构造函数，利用初始化列表
 
+//+
+IceBullet::IceBullet(QPoint startPos, QPoint targetPoint, int damage, Enemy *target,
+                     MainWindow *game, const QPixmap &sprite/* = QPixmap(":/image/icebullet.png")*/)
+    : Bullet(startPos,targetPoint,damage,target,game,sprite)
+{}
+
+IceBullet::~IceBullet()
+{}
+
+PoisonBullet::PoisonBullet(QPoint startPos, QPoint targetPoint, int damage, Enemy *target,
+                          MainWindow *game, const QPixmap &sprite/* = QPixmap(":/image/poisonbullet.png")*/)
+    : Bullet(startPos,targetPoint,damage,target,game,sprite)
+{}
+
+PoisonBullet::~PoisonBullet()
+{}
+
+//+
+
 void Bullet::draw(QPainter *painter) const
 {
     painter->drawPixmap(m_currentPos, m_sprite);
@@ -43,6 +62,26 @@ void Bullet::hitTarget()
     // 这样处理的原因是:可能多个炮弹击中敌人，而其中一个将其消灭，导致敌人delete，后续炮弹再攻击到的敌人就是无效内存区域，因此先判断下敌人是否还没有被打死
     if (m_game->enemyList().indexOf(m_target) != -1)//indexof方法，如果敌人没被打死
         {m_target->getDamage(m_damage);}//扣减敌人Hp
+    m_game->removedBullet(this);//子弹消失
+}
+
+void IceBullet::hitTarget()//+
+{
+    if (m_game->enemyList().indexOf(m_target) != -1)//indexof方法，如果敌人没被打死
+    {
+        m_target->slowDown();//m_isSlowed变为1
+        m_target->getDamage(m_damage);//扣减敌人Hp
+    }
+    m_game->removedBullet(this);//子弹消失
+}
+
+void PoisonBullet::hitTarget()//+
+{
+    if (m_game->enemyList().indexOf(m_target) != -1)//indexof方法，如果敌人没被打死
+    {
+        m_target->getPoisoned();//m_isPoisoned变为1
+        m_target->getDamage(m_damage);//扣减敌人Hp
+    }
     m_game->removedBullet(this);//子弹消失
 }
 

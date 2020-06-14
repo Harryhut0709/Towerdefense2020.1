@@ -13,5 +13,17 @@
         <file>image/enemy3.png</file>
         <file>image/enemy4.png</file>
         <file>image/enemy5.png</file>
+        <file>sound/BGM.mp3</file>
+        <file>sound/BulletShot.mp3</file>
+        <file>sound/EnemyKilled.mp3</file>
+        <file>sound/LifeLoss.mp3</file>
+        <file>sound/PlantTower.mp3</file>
+        <file>sound/SellTower.mp3</file>
+        <file>sound/UpgradeTower.mp3</file>
+        <file>image/tower3.png</file>
+        <file>image/tower2.png</file>
+        <file>sound/SelectTower.mp3</file>
+        <file>image/selltowerbutton.png</file>
+        <file>image/upgradetowerbutton.png</file>
     </qresource>
 </RCC>

@@ -3,7 +3,8 @@
 #include "waypoint.h"
 #include "enemy.h"
 #include "bullet.h"
-//#include "audioplayer.h"
+#include "soundcontrol.h"  //+
+#include "button.h"        //+
 //#include "plistreader.h"
 #include <QPainter>
 #include <iostream>
@@ -13,10 +14,14 @@
 #include <QTimer>//时间
 #include <QXmlStreamReader>
 #include <QtDebug>
+#include <QMediaPlayer>
 
 using namespace std;
 
 static const int TowerCost = 300;//设定每安置一个炮塔花费300金币
+static const int IceTowerCost = 500;//设定每安置一个冰冻塔花费500金币
+static const int PoisonTowerCost = 500;//设定每安置一个毒塔花费500金币
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -31,6 +36,10 @@ MainWindow::MainWindow(QWidget *parent)
     addWayPoints();
     loadTowerPositions();
     loadWave();
+    loadTowerSelectButtons();//+
+
+    m_soundcontrol = new SoundControl(this);
+    m_soundcontrol->startBGM();                   //+ //播放背景音乐
 
     //一个循环结构的时间检定，30ms做一次，移动敌人，模拟帧数
     QTimer *timer = new QTimer(this);
@@ -58,6 +67,7 @@ void MainWindow::paintEvent(QPaintEvent *)
     drawWave(&cachePainter);
     drawHP(&cachePainter);
     drawPlayerGold(&cachePainter);//顶端显示基本信息
+    drawOtherTexts(&cachePainter);//+ //其他文字信息
 
     QPainter painter(this);
         painter.drawPixmap(0, 0, cachePix);//再把cachePix一次性画出来
@@ -78,17 +88,39 @@ void MainWindow::mousePressEvent(QMouseEvent * event)
     auto it = m_towerPositionsList.begin();
     while (it != m_towerPositionsList.end())
     {
-        if (canBuyTower() && it->containPoint(pressPos) && !it->hasTower())
+        if (canBuyTower() && it->containPoint(pressPos) && !it->hasTower() && m_currentTowerMode==1)//+ //普通塔
             //有钱 && 遍历所有安放位置，点在安放位置内 && 安放位置是空的
         {
             m_playerGold -= TowerCost;//扣钱
             it->setHasTower();//占坑
             Tower *tower = new Tower (it->centerPos(),this);
+            m_soundcontrol->playSound(PlantTower);//+ //声音
             m_towersList.push_back(tower);
             update();
             break;
         }
 
+        if (canBuyTower() && it->containPoint(pressPos) && !it->hasTower() && m_currentTowerMode==2)//+ //冰冻塔
+        {
+            m_playerGold -= IceTowerCost;//扣钱
+            it->setHasTower();//占坑
+            IceTower *tower = new IceTower (it->centerPos(),this);
+            m_soundcontrol->playSound(PlantTower);//+ //声音
+            m_towersList.push_back(tower);
+            update();
+            break;
+        }
+
+        if (canBuyTower() && it->containPoint(pressPos) && !it->hasTower() && m_currentTowerMode==3)//+ //毒塔
+        {
+            m_playerGold -= PoisonTowerCost;//扣钱
+            it->setHasTower();//占坑
+            PoisonTower *tower = new PoisonTower (it->centerPos(),this);
+            m_soundcontrol->playSound(PlantTower);//+ //声音
+            m_towersList.push_back(tower);
+            update();
+            break;
+        }
         ++it;
     }
 }
@@ -96,15 +128,18 @@ void MainWindow::mousePressEvent(QMouseEvent * event)
 void MainWindow::getHpDamage(int damage /* =1 */)
 {
     m_playerHp -= damage;
+    m_soundcontrol->playSound(LifeLoss);//+ //声音
     if (m_playerHp<=0)
         doGameOver();
 }
 
-void MainWindow::removedEnemy(Enemy *enemy)// 敌方被攻击，消失
+void MainWindow::removedEnemy(Enemy *enemy)// 敌方被攻击或走到尽头，消失
 {
     Q_ASSERT(enemy);
 
     m_enemyList.removeOne(enemy);
+    if (enemy->getCurrentHp()>0) m_soundcontrol->playSound(LifeLoss);//+ //没打死走到基地，扣血
+    else m_soundcontrol->playSound(EnemyKilled);                     //+ //敌人被击毙
     delete enemy;
 
     // 没有怪物就加一波
@@ -134,7 +169,7 @@ void MainWindow::removedBullet(Bullet *bullet)//子弹打中敌人，消失
 void MainWindow::addBullet(Bullet *bullet)
 {
     Q_ASSERT(bullet);
-
+    m_soundcontrol->playSound(Bulletshot);//+ //子弹发射声音
     m_bulletList.push_back(bullet);
 }
 
@@ -144,31 +179,47 @@ void MainWindow::awardGold(int gold)
     update();
 }
 
-bool MainWindow::canBuyTower() const
+bool MainWindow::canBuyTower() const //+ //三种塔的价格不一样
 {
-    if (m_playerGold >= TowerCost)
+    if (m_currentTowerMode==1)
     {
-        return true;
+        if (m_playerGold >= TowerCost) return true;
+        else return false;
     }
-    else return false;
+    else if (m_currentTowerMode==2)
+    {
+        if (m_playerGold >= IceTowerCost) return true;
+        else return false;
+    }
+    else if (m_currentTowerMode==3)
+    {
+        if (m_playerGold >= PoisonTowerCost) return true;
+        else return false;
+    }
 }
 
 void MainWindow::drawWave(QPainter *painter)
 {
     painter->setPen(QPen(Qt::red));
-    painter->drawText(QRect(400, 5, 100, 25), QString("WAVE : %1").arg(m_waves + 1));
+    painter->drawText(QRect(400,5,100,25), QString("WAVE : %1").arg(m_waves + 1));
 }
 
 void MainWindow::drawHP(QPainter *painter)
 {
     painter->setPen(QPen(Qt::red));
-    painter->drawText(QRect(30, 5, 100, 25), QString("HP : %1").arg(m_playerHp));
+    painter->drawText(QRect(30,5,100,25), QString("HP : %1").arg(m_playerHp));
 }
 
 void MainWindow::drawPlayerGold(QPainter *painter)
 {
     painter->setPen(QPen(Qt::red));
-    painter->drawText(QRect(200, 5, 200, 25), QString("GOLD : %1").arg(m_playerGold));
+    painter->drawText(QRect(200,5,200,25), QString("GOLD : %1").arg(m_playerGold));
+}
+
+void MainWindow::drawOtherTexts(QPainter *painter)//+
+{
+    painter->setPen(QPen(Qt::red));
+    painter->drawText(QRect(60,500,300,25), QString("PLEASE SELECT TOWER HERE!"));
 }
 
 void MainWindow::loadTowerPositions()
@@ -239,6 +290,37 @@ void MainWindow::addWayPoints()
     waypoint9->setNextWayPoint(waypoint8);
 }
 
+void MainWindow::loadTowerSelectButtons()//+ //初始化选塔按钮
+{
+    Button *tower1 = new Button(":/image/tower1.png");
+    Button *tower2 = new Button(":/image/tower2.png");
+    Button *tower3 = new Button(":/image/tower3.png");
+    tower1->setParent(this);
+    tower2->setParent(this);
+    tower3->setParent(this);
+    tower1->setFixedSize(32,64);
+    tower2->setFixedSize(72,72);
+    tower3->setFixedSize(32,32);
+    tower1->move(80,530);
+    tower2->move(120,525);
+    tower3->move(200,545);
+
+    connect(tower1,&QPushButton::clicked,this,[=](){
+        m_soundcontrol->playSound(SelectTower);
+        m_currentTowerMode=1;//普通塔
+    });
+
+    connect(tower2,&QPushButton::clicked,this,[=](){
+        m_soundcontrol->playSound(SelectTower);
+        m_currentTowerMode=2;//冰冻塔
+    });
+
+    connect(tower3,&QPushButton::clicked,this,[=](){
+        m_soundcontrol->playSound(SelectTower);
+        m_currentTowerMode=3;
+    });
+}
+
 bool MainWindow::loadWave()
 {
     if (m_waves>=6)
@@ -253,7 +335,7 @@ bool MainWindow::loadWave()
         m_enemyList.push_back(enemy);
         QTimer::singleShot(enemyStartInterval[i],enemy,SLOT(doActivate()));
     }
-    // 初步设计六波敌人结束，每波出现六个敌人，时间以ms记，以后这里会改用xml文件来读取控制，在构造函数中先初始化航点，再调用此函数
+    // 初步设计六波敌人结束，每波出现八个敌人，时间以ms记，以后这里会改用xml文件来读取控制，在构造函数中先初始化航点，再调用此函数
     // 用QTimer::singleShot来定时发送信息，enemy可以移动，因此enemy需要继承QObject才可使用信号和槽
     return true;
 }
@@ -269,7 +351,7 @@ void MainWindow::doGameOver()
 
 void MainWindow::updateMap()
 {
-//    if(!m_stopgame){//如果暂停就不更新了
+//    if(!m_gameStop){//如果暂停就不更新了
         foreach (Enemy *enemy, m_enemyList)
             enemy->move();
         foreach (Tower *tower, m_towersList)
@@ -287,3 +369,4 @@ QList<Enemy *> MainWindow::enemyList() const//调取怪物表
 {
     return m_enemyList;
 }
+
