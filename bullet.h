@@ -44,4 +44,33 @@ protected:
     static const QSize ms_fixedSize;
 };
 
+//+
+class IceBullet:public Bullet{
+    Q_OBJECT//所有应用QT槽的类都需要声明
+    Q_PROPERTY(QPoint m_currentPos READ currentPos WRITE setCurrentPos)
+
+public:
+    IceBullet(QPoint startPos, QPoint targetPoint, int damage, Enemy *target,
+           MainWindow *game, const QPixmap &sprite = QPixmap(":/image/icebullet.png"));
+    ~IceBullet();
+
+public slots:
+    void hitTarget();                 //槽函数：击中敌人时与敌人相连接，使得敌人受到伤害
+    //同时改变被击中被击中的enemy的m_isSlowed
+};
+
+class PoisonBullet:public Bullet{
+    Q_OBJECT//所有应用QT槽的类都需要声明
+    Q_PROPERTY(QPoint m_currentPos READ currentPos WRITE setCurrentPos)
+
+public:
+    PoisonBullet(QPoint startPos, QPoint targetPoint, int damage, Enemy *target,
+           MainWindow *game, const QPixmap &sprite = QPixmap(":/image/poisonbullet.png"));
+    ~PoisonBullet();
+
+public slots:
+    void hitTarget();                 //槽函数：击中敌人时与敌人相连接，使得敌人受到伤害
+    //同时改变被击中被击中的enemy的m_isPoisoned
+};
+
 #endif // BULLET_H

@@ -31,7 +31,6 @@ public:
     virtual void setLevel(int level);               //设置怪兽等级
     virtual int  getCurrentHp() const;              //+ //判断是被打死了还是走到基地了，加声音
 
-    //未实现
     void slowDown();                                //被icebullet击中，修改m_isSlowed的值为1
     void getPoisoned();                             //被poisonbullet击中，怪兽一段时间的持续伤害
     //+

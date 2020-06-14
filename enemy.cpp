@@ -1,5 +1,7 @@
 #include "enemy.h"
 #include "utility.h"
+#include <QTimer> //+ //用于控制冰冻时间
+#include <QObject> //+ //调用connect函数
 
 static const int Health_Bar_Width = 40;
 
@@ -11,7 +13,9 @@ Enemy::Enemy(Waypoint *startWayPoint, MainWindow *game,int level /*= 1 */,
              const QPixmap &sprite /* = QPixmap(":/image/enemy1.png") */,
              int maxHp /* = 40 */,qreal walkingSpeed /*= 2.0 */)
     : QObject(0)
-    , m_active(false)              //注意这个初始化
+    , m_active(false)             //注意这个初始化
+    , m_isSlowed(false)
+    , m_isPoisoned(false)         //+ //初始时均false,被相关子弹击中后一段时间受到相应伤害
     , m_maxHp(maxHp)
     , m_currentHp(maxHp)
     , m_walkingSpeed(walkingSpeed)
@@ -86,27 +90,56 @@ void Enemy::move()
     QPoint targetPoint = m_destinationWayPoint->pos();
 
     // 未来修改这个可以添加移动状态,加快,减慢,m_walkingSpeed是基准
-    qreal movementSpeed = m_walkingSpeed;
-    // 向量标准化
-    // 移动速度其实每次都是1,normalized取值只有(1,0)/(-1,0)/(0,1)/(0,-1)四种,主要用来计算敌人旋转角度(0/90/180/270)
-    QVector2D normalized(targetPoint - m_pos);
-    normalized.normalize();
-    m_pos = m_pos + normalized.toPoint() * movementSpeed;
+    // +
+    if(m_isSlowed)//被icebullet击中,减速为原来的一半，持续时间可以修改
+    {
+        //引入一个timer控制冰冻时间
+        QTimer *frozentimer = new QTimer();
+        frozentimer->setInterval(2000);//被冰冻的时间
+        connect(frozentimer,SIGNAL(timeout()),this,SLOT(SpeedUp()));
+        frozentimer->start();
+        qreal movementSpeed = 0.3 * m_walkingSpeed;
+        // 向量标准化
+        // 移动速度其实每次都是1,normalized取值只有(1,0)/(-1,0)/(0,1)/(0,-1)四种,主要用来计算敌人旋转角度(0/90/180/270)
+        QVector2D normalized(targetPoint - m_pos);
+        normalized.normalize();
+        m_pos = m_pos + normalized.toPoint() * movementSpeed;
+        m_rotationSprite = qRadiansToDegrees(qAtan2(normalized.y(), normalized.x()));
+        // 确定敌人选择方向
+        // 默认图片向左,需要修正180度转右
+    }
 
-    // 确定敌人选择方向
-    // 默认图片向左,需要修正180度转右
-    m_rotationSprite = qRadiansToDegrees(qAtan2(normalized.y(), normalized.x()));
+    else
+    {
+        qreal movementSpeed = m_walkingSpeed;
+        QVector2D normalized(targetPoint - m_pos);
+        normalized.normalize();
+        m_pos = m_pos + normalized.toPoint() * movementSpeed;
+        m_rotationSprite = qRadiansToDegrees(qAtan2(normalized.y(), normalized.x()));
+    }
+
 }
 
 void Enemy::getDamage(int damage)
 {
-//    m_game->audioPlayer()->playSound(LaserShootSound);
     m_currentHp -= damage;//扣减敌人收到的伤害
+
+    if (m_isPoisoned)//+
+    {
+        QTimer *stoptimer = new QTimer();//这个用来控制结束时间
+        QTimer *poisontimer = new QTimer();
+        poisontimer->setInterval(1000);//每次中毒伤害时间
+        stoptimer->setInterval(5000);//持续中毒时间
+        stoptimer->setSingleShot(true);//只触发一次
+        connect(poisontimer,SIGNAL(timeout()),this,SLOT(getPoisonDamage()));
+        connect(stoptimer,SIGNAL(timeout()),this,SLOT(CurePoison()));
+        poisontimer->start();
+        stoptimer->start();
+    }
 
     // 阵亡,需要移除
     if (m_currentHp <= 0)
     {
-//        m_game->audioPlayer()->playSound(EnemyDestorySound);
         m_game->awardGold(200);//打死一个敌人奖励金币
         getRemoved();//敌人消失
     }
@@ -129,7 +162,6 @@ void Enemy::getAttacked(Tower *attacker)
 }
 
 // 表明敌人已经逃离了攻击范围
-
 void Enemy::gotLostSight(Tower *attacker)
 {
     m_attackedTowersList.removeOne(attacker);
@@ -140,6 +172,36 @@ void Enemy::setLevel(int level){}
 QPoint Enemy::pos() const
 {
     return m_pos;
+}
+
+int Enemy::getCurrentHp() const
+{
+    return m_currentHp;
+}
+
+void Enemy::slowDown()//+ //被冰冻 //状态转换
+{
+    m_isSlowed=true;
+}
+
+void Enemy::SpeedUp()//+ //冰冻解除 //这必须是槽函数！！！！
+{
+    m_isSlowed=false;
+}
+
+void Enemy::getPoisoned()//+ //中毒
+{
+    m_isPoisoned=true;
+}
+
+void Enemy::CurePoison()//+ //中毒解除 //槽函数
+{
+    m_isPoisoned=false;
+}
+
+void Enemy::getPoisonDamage()//+ //中毒伤害 //槽函数
+{
+    m_currentHp -= 10;
 }
 
 void Enemy::doActivate()

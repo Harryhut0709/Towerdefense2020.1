@@ -31,7 +31,6 @@ bool TowerPosition::hasTower() const
 void TowerPosition::setHasTower(bool hasTower/* = true*/)
 {
     m_hasTower = hasTower;
-//    m_towerLevel=1;
 }
 
 void TowerPosition::draw(QPainter *painter) const

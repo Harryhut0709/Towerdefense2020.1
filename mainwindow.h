@@ -1,10 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+
 #include <QMainWindow>
 #include <QList>
 #include <QPushButton>
 #include "towerposition.h"
 #include "tower.h"
+#include "soundcontrol.h"
 
 namespace Ui {
 class MainWindow;
@@ -13,12 +15,7 @@ class MainWindow;
 class Waypoint;
 class Enemy;
 class Bullet;
-class Enemy;
 //头文件之间不能相互包含
-
-namespace Ui {
-class MainWindow;
-}
 
 class MainWindow : public QMainWindow
 {
@@ -27,6 +24,8 @@ class MainWindow : public QMainWindow
 public:
     void paintEvent(QPaintEvent *);
     explicit MainWindow(QWidget *parent = 0);
+
+//    void startGame();                                   //+ //游戏开始，更改m_gameStart的值
 
     void getHpDamage(int damage = 1);                   //敌方进入基地，扣血
     void removedEnemy(Enemy *enemy);                    //敌方被打死，消失
@@ -39,7 +38,9 @@ public:
     void drawWave(QPainter *painter);
     void drawHP(QPainter *painter);
     void drawPlayerGold(QPainter *painter);             //这三个函数在顶顶上显示当前信息，随时更新，暂时先以丑陋的文字实现
+    void drawOtherTexts(QPainter *painter);             //+ //其他文字信息
 
+    SoundControl * soundcontrol() const;                //+
     QList<Enemy *> enemyList() const;                   //游戏中涉及到的怪物以QList形式存储
 
     ~MainWindow();
@@ -47,6 +48,7 @@ public:
 private:
     void loadTowerPositions();                          //初始化塔的摆放位置
     void addWayPoints();                                //初始化怪物的行走路线（航点）
+    void loadTowerSelectButtons();                      //+ //初始化选塔按钮
     bool loadWave();                                    //初始化波数信息
 
     void doGameOver();                                  //游戏结束，播放胜利或者失败动画，未实现
@@ -56,12 +58,17 @@ private slots://QT的private槽当前类及其子类可以将信号与之相连接
 
 private:
     Ui::MainWindow *ui;
+
+    int                     m_currentTowerMode=1;       //+ //通过这个变量来确定安放的不同塔
+
     int						m_waves;                    //波数
     int						m_playerHp;                 //基地血量
     int						m_playerGold;               //玩家金币
 
     bool					m_gameEnded;
     bool					m_gameWin_first;
+
+    SoundControl *          m_soundcontrol;             //+
 
     QList<TowerPosition>    m_towerPositionsList;
     QList<Tower *>          m_towersList;

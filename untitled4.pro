@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += multimedia   # +
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -30,6 +31,7 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         scene.cpp \
+        soundcontrol.cpp \
         tower.cpp \
         towerposition.cpp \
         waypoint.cpp
@@ -40,6 +42,7 @@ HEADERS += \
         enemy.h \
         mainwindow.h \
         scene.h \
+        soundcontrol.h \
         tower.h \
         towerposition.h \
         utility.h \
