@@ -39,4 +39,3 @@ void TowerPosition::draw(QPainter *painter) const
 }
 
 //之后所有对象信息几乎都会包含这三个：坐标点、尺寸大小、图片信息，管理也都集中放在容器交给mainwindow管理
-

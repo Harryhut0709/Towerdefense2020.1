@@ -27,6 +27,7 @@ public:
     virtual void attackEnemy();                   //攻击敌人，已实现
     virtual void chooseEnemyForAttack(Enemy *enemy);      //选定攻击敌人（与正在攻击的敌人连接），已实现
     virtual void lostSightOfEnemy();              //敌人超出攻击范围，已实现
+    virtual void setTowerLevel();                 //++ //调整攻击参数
     int getTowerType();                           //不同类型的塔，//+ 已实现
 
     //+ //升级和拆除

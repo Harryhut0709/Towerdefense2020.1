@@ -21,6 +21,7 @@ using namespace std;
 static const int TowerCost = 300;//设定每安置一个炮塔花费300金币
 static const int IceTowerCost = 500;//设定每安置一个冰冻塔花费500金币
 static const int PoisonTowerCost = 500;//设定每安置一个毒塔花费500金币
+static const int TowerUpgradeCost = 500;//设定升级普通炮塔需要500金币
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -28,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , m_waves(0)
     , m_playerHp(5)//调多点以免死掉
-    , m_playerGold(2000)//先开挂
+    , m_playerGold(20000)//先开挂
     , m_gameEnded(false)
     , m_gameWin_first(false)
 {
@@ -123,6 +124,23 @@ void MainWindow::mousePressEvent(QMouseEvent * event)
         }
         ++it;
     }
+
+    //++ 升级功能
+    auto upgradetect = m_towersList.begin();
+    while (upgradetect != m_towersList.end())
+    {
+        if (canUpgradeTower() && (*upgradetect)->containupgradebutton(pressPos) && !(*upgradetect)->isMaxlevel())//足够金币 点击到了按钮上 未满级
+        {
+            m_playerGold -= TowerUpgradeCost;//扣钱
+            (*upgradetect)->setUpgradeTower();//升级
+            (*upgradetect)->setTowerLevel();//升级效果
+            m_soundcontrol->playSound(PlantTower);//声音，先暂时用建塔的声音
+            update();
+            break;
+        }
+        ++upgradetect;//这一步可能不需要 //去掉就闪退
+    }
+
 }
 
 void MainWindow::getHpDamage(int damage /* =1 */)
@@ -196,6 +214,12 @@ bool MainWindow::canBuyTower() const //+ //三种塔的价格不一样
         if (m_playerGold >= PoisonTowerCost) return true;
         else return false;
     }
+}
+
+bool MainWindow::canUpgradeTower() const //++ //判断是否可以升级
+{
+    if (m_playerGold >= TowerUpgradeCost) return true;
+    else return false;//升级的价格先设置为相同
 }
 
 void MainWindow::drawWave(QPainter *painter)
@@ -369,4 +393,3 @@ QList<Enemy *> MainWindow::enemyList() const//调取怪物表
 {
     return m_enemyList;
 }
-

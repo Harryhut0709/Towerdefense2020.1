@@ -145,15 +145,26 @@ void Enemy::getDamage(int damage)
     }
 }
 
-void Enemy::getRemoved()
+void Enemy::getRemoved()//++ //加上了中毒效果，此处需要修改逻辑 //好像并没有找到正确的逻辑解决中毒bug...
 {
-    if (m_attackedTowersList.empty())
+    if (m_attackedTowersList.empty() && m_currentHp>0 )
         return;
 
-    foreach (Tower *attacker, m_attackedTowersList)
-        attacker->targetKilled();
-    // 通知game,此敌人已经阵亡
-    m_game->removedEnemy(this);
+    if (m_currentHp<=0 && m_isPoisoned==1)
+    {
+//        foreach (Tower *attacker, m_attackedTowersList)
+//            attacker->targetKilled();
+//        // 通知game,此敌人已经阵亡
+        m_game->removedEnemy(this);
+    }
+
+    else if (m_currentHp<=0 && m_isPoisoned==0)
+    {
+                foreach (Tower *attacker, m_attackedTowersList)
+                    attacker->targetKilled();
+                // 通知game,此敌人已经阵亡
+                m_game->removedEnemy(this);
+    }
 }
 
 void Enemy::getAttacked(Tower *attacker)
@@ -211,5 +222,3 @@ void Enemy::doActivate()
 //调用这个槽函数之后，enemy才可以行动
 
 Enemy::~Enemy(){}
-
-

@@ -46,3 +46,4 @@ void SoundControl::playSound(SoundType soundType)
     player.setMedia(mediasUrls[soundType]);
     player.play();
 }
+

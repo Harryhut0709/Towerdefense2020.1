@@ -35,6 +35,7 @@ public:
 
     void mousePressEvent(QMouseEvent *);                //鼠标点击触发事件
     bool canBuyTower() const;                           //判断是否能够买新的塔
+    bool canUpgradeTower() const;                       //++ //判断是否能升级
     void drawWave(QPainter *painter);
     void drawHP(QPainter *painter);
     void drawPlayerGold(QPainter *painter);             //这三个函数在顶顶上显示当前信息，随时更新，暂时先以丑陋的文字实现

@@ -30,6 +30,7 @@ Tower::Tower(QPoint pos, MainWindow *game, const QPixmap &sprite /* =  QPixmap("
     , m_sprite(sprite)
 {
     m_towerType=1; //+
+    m_towerLevel=1; //++
     m_fireRateTimer = new QTimer(this);
     connect(m_fireRateTimer, SIGNAL(timeout()), this, SLOT(shootWeapon()));
 }
@@ -187,6 +188,22 @@ void Tower::shootWeapon()
     m_game->addBullet(bullet);
 }
 
+void Tower::setTowerLevel()
+{
+    if (m_towerLevel==1)
+    {
+        m_attackRange=150;
+        m_damage=8;
+        m_fireRate=1200;
+    }
+    if (m_towerLevel==2)
+    {
+        m_attackRange=200;
+        m_damage=10;
+        m_fireRate=100;
+    }
+}
+
 int Tower::getTowerType()
 {
     return m_towerType;
@@ -227,7 +244,7 @@ void PoisonTower::shootWeapon()
 //+ //升级和拆除
 void Tower::setUpgradeTower()
 {
-    m_towerLevel=2;
+    this->m_towerLevel=2;
 }
 
 bool Tower::isMaxlevel() const
@@ -262,9 +279,4 @@ bool Tower::containsellbutton(const QPoint &pos) const//是否在卖塔按钮区域内
     bool isYInHere = sellbuttoncenterPos().y() < pos.y() && pos.y() < (sellbuttoncenterPos().y() + ms_buttonfixedSize.height());
     return isXInHere && isYInHere;
 }
-
-
-
-
-
 
