@@ -27,16 +27,17 @@ public:
     virtual void attackEnemy();                   //攻击敌人，已实现
     virtual void chooseEnemyForAttack(Enemy *enemy);      //选定攻击敌人（与正在攻击的敌人连接），已实现
     virtual void lostSightOfEnemy();              //敌人超出攻击范围，已实现
-    virtual void setTowerLevel();                 //++ //调整攻击参数
     int getTowerType();                           //不同类型的塔，//+ 已实现
+    const QPoint gettowerpos() const;                   //++ //拆塔的时候需要判断中心点是否重合
 
     //+ //升级和拆除
-    virtual void setUpgradeTower();                             //升级后更新塔的等级和攻击能力参数
+    virtual void setTowerLevel(int level);                      //++ 升级并且更新能力参数
     virtual bool isMaxlevel() const;                            //该处的塔是否满级，还可以升级否
     const QPoint upgradebuttoncenterPos() const;                //升级塔按钮的中心点
     const QPoint sellbuttoncenterPos() const;                   //卖塔按钮的中心点
     virtual bool containupgradebutton(const QPoint &pos) const; //是否点到了升级按钮上
     virtual bool containsellbutton(const QPoint &pos) const;    //是否点到了卖塔按钮上
+    virtual void disconnectEnemyForAttack(Tower *attacker);     //++ //拆塔后取消与敌人的关联
 
 
 public slots:
@@ -86,6 +87,7 @@ public:
     ~IceTower();
     void draw(QPainter *painter) const;//因为图片资源的原因，三个塔的中心点不一样，所以draw()也要重载
 //    void chooseEnemyForAttack(Enemy *enemy);//击中的敌人减速，所以需要重载 //这一步在icebullet中实现,因为bullet与被攻击的敌人直接相连
+    void setTowerLevel(int level);//++ //塔的属性不同，所以需要重载
 
 public slots:
     void shootWeapon();//子弹变化，所以需要重载
@@ -101,6 +103,7 @@ public:
     ~PoisonTower();
     void draw(QPainter *painter) const;//因为图片资源的原因，三个塔的中心点不一样，所以draw()也要重载
 //    void chooseEnemyForAttack(Enemy *enemy);//击中的敌人中毒，所以需要重载
+    void setTowerLevel(int level);//++ //塔的属性不同，所以需要重载
 
 public slots:
     void shootWeapon();//子弹变化，所以需要重载

@@ -38,7 +38,9 @@ void SoundControl::playSound(SoundType soundType)
         QUrl("qrc:/sound/SelectTower.mp3"),
         QUrl("qrc:/sound/LifeLoss.mp3"),
         QUrl("qrc:/sound/BulletShot.mp3"),
-        QUrl("qrc:/sound/EnemyKilled.mp3")
+        QUrl("qrc:/sound/EnemyKilled.mp3"),
+        QUrl("qrc:/sound/Finalwave.mp3"),
+        QUrl("qrc:/sound/SelectButton.mp3")
     };
 
     static QMediaPlayer player;

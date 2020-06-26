@@ -25,5 +25,34 @@
         <file>sound/SelectTower.mp3</file>
         <file>image/selltowerbutton.png</file>
         <file>image/upgradetowerbutton.png</file>
+        <file>sound/Finalwave.mp3</file>
+        <file>image/pause.png</file>
+        <file>image/resume.png</file>
+        <file>sound/SelectButton.mp3</file>
+        <file>image/goldframe.png</file>
+        <file>image/Hpframe.png</file>
+        <file>image/icemagic.png</file>
+        <file>image/waveframe.png</file>
+        <file>image/enemy5iced.png</file>
+        <file>image/enemy5poisoned.png</file>
+        <file>image/enemy1iced&amp;posioned.png</file>
+        <file>image/enemy1iced.png</file>
+        <file>image/enemy1poisoned.png</file>
+        <file>image/enemy2iced&amp;poisoned.png</file>
+        <file>image/enemy2iced.png</file>
+        <file>image/enemy2poisoned.png</file>
+        <file>image/enemy3iced&amp;poisoned.png</file>
+        <file>image/enemy3iced.png</file>
+        <file>image/enemy3poisoned.png</file>
+        <file>image/enemy4iced&amp;poisoned.png</file>
+        <file>image/enemy4iced.png</file>
+        <file>image/enemy4poisoned.png</file>
+        <file>image/enemy5iced&amp;poisoned.png</file>
+        <file>image/setting2.jpg</file>
+        <file>image/setting2button.png</file>
+        <file>image/setting1button.png</file>
+        <file>image/towerplant1.png</file>
+        <file>image/endgame.png</file>
+        <file>image/title.png</file>
     </qresource>
 </RCC>

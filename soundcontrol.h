@@ -12,7 +12,9 @@ enum SoundType//枚举类型的数组
     SelectTower,              //选中某一种塔
     LifeLoss,                 //怪物到基地，掉血
     Bulletshot,               //子弹发射
-    EnemyKilled               //怪物击毙
+    EnemyKilled,              //怪物击毙
+    FinalWave,                //最后一波 //++
+    SelectButton              //暂停和继续按钮触发声音
 };
 
 class SoundControl: public QObject

@@ -19,7 +19,7 @@ Tower::Tower(QObject *parent) : QObject(parent)
 Tower::Tower(QPoint pos, MainWindow *game, const QPixmap &sprite /* =  QPixmap(":/image/tower1.png") */)
     : m_attacking(false)
     , m_attackRange(150)
-    , m_damage(8)
+    , m_damage(12)
     , m_fireRate(1200)
     , m_rotationSprite(0.0)
     , m_chooseEnemy(NULL)
@@ -40,7 +40,7 @@ IceTower::IceTower(QPoint pos, MainWindow *game,const QPixmap &sprite /* = QPixm
 {
     m_towerType=2;
     m_attackRange=150;
-    m_damage=5;
+    m_damage=8;
     m_fireRate=1000;
     m_fireRateTimer = new QTimer(this);
     connect(m_fireRateTimer, SIGNAL(timeout()), this, SLOT(shootWeapon()));
@@ -169,13 +169,12 @@ void Tower::chooseEnemyForAttack(Enemy *enemy)
 }
 //炮塔攻击规则：锁定第一个发现的敌人，直到打死为止
 
-void Tower::lostSightOfEnemy()
+void Tower::lostSightOfEnemy()//#
 {
     //敌人跑出攻击塔的攻击范围，需要取消塔与敌人的关联，同时停止攻击
     m_chooseEnemy->gotLostSight(this);
-    if (m_chooseEnemy)
-        m_chooseEnemy = NULL;
-
+//    if (m_chooseEnemy)//这句话是多余的，后面的disconnectEnemyForAttack才需要这个函数
+    m_chooseEnemy = NULL;
     m_fireRateTimer->stop();
     m_rotationSprite = 0.0;//炮塔归位
 }
@@ -188,19 +187,54 @@ void Tower::shootWeapon()
     m_game->addBullet(bullet);
 }
 
-void Tower::setTowerLevel()
+void Tower::setTowerLevel(int level)//++ //升级并且重置属性
 {
+    m_towerLevel=level;
     if (m_towerLevel==1)
     {
         m_attackRange=150;
-        m_damage=8;
+        m_damage=12;
         m_fireRate=1200;
     }
     if (m_towerLevel==2)
     {
         m_attackRange=200;
-        m_damage=10;
-        m_fireRate=100;
+        m_damage=15;
+        m_fireRate=600;
+    }
+}
+
+void IceTower::setTowerLevel(int level)
+{
+    m_towerLevel=level;
+    if (m_towerLevel==1)
+    {
+        m_attackRange=150;
+        m_damage=5;
+        m_fireRate=1000;
+    }
+    if (m_towerLevel==2)
+    {
+        m_attackRange=180;
+        m_damage=8;
+        m_fireRate=900;
+    }
+}
+
+void PoisonTower::setTowerLevel(int level)
+{
+    m_towerLevel=level;
+    if (m_towerLevel==1)
+    {
+        m_attackRange=150;
+        m_damage=5;
+        m_fireRate=1500;
+    }
+    if (m_towerLevel==2)
+    {
+        m_attackRange=180;
+        m_damage=8;
+        m_fireRate=1000;
     }
 }
 
@@ -241,11 +275,11 @@ void PoisonTower::shootWeapon()
     m_game->addBullet(bullet);
 }
 
-//+ //升级和拆除
-void Tower::setUpgradeTower()
-{
-    this->m_towerLevel=2;
-}
+////+ //升级和拆除
+//void Tower::setUpgradeTower()
+//{
+//    this->m_towerLevel=2;
+//}
 
 bool Tower::isMaxlevel() const
 {
@@ -280,3 +314,18 @@ bool Tower::containsellbutton(const QPoint &pos) const//是否在卖塔按钮区域内
     return isXInHere && isYInHere;
 }
 
+const QPoint Tower::gettowerpos() const
+{
+    return m_pos;
+}
+
+void Tower::disconnectEnemyForAttack(Tower *attacker)
+{
+    if (m_chooseEnemy != NULL)//此时与敌人相连
+    {
+        m_chooseEnemy->gotLostSight(attacker);//这个函数其实是取消攻击塔和敌人的关联
+        m_chooseEnemy=NULL;//空指针
+        m_fireRateTimer->stop();
+        m_rotationSprite = 0.0;
+    }
+}//这个函数和getlostsight的逻辑很像，但有一点不同，就是这是主动把敌人移出攻击范围的

@@ -18,15 +18,91 @@ Enemy::Enemy(Waypoint *startWayPoint, MainWindow *game,int level /*= 1 */,
     , m_isPoisoned(false)         //+ //初始时均false,被相关子弹击中后一段时间受到相应伤害
     , m_maxHp(maxHp)
     , m_currentHp(maxHp)
-    , m_walkingSpeed(walkingSpeed)
     , m_level(level)
+    , m_walkingSpeed(walkingSpeed)
     , m_rotationSprite(0.0)
-    , m_pos(startWayPoint->pos())
     , m_destinationWayPoint(startWayPoint->nextWayPoint())  //注意这个初始化
     , m_game(game)
+    , m_pos(startWayPoint->pos())
     , m_sprite(sprite)
 {
-//    setLevel(m_level);//这是啥？？？？
+    m_level=level;
+}
+
+Enemy1::Enemy1(Waypoint *startWayPoint, MainWindow *game,int level /*= 1 */,
+               const QPixmap &sprite /* = QPixmap(":/image/enemy2.png") */,
+               int maxHp /* = 40 */,qreal walkingSpeed /*= 2.0 */)
+    :Enemy(startWayPoint,game,level,sprite,maxHp,walkingSpeed)
+{
+    m_active=false;             //注意这个初始化
+    m_isSlowed=false;
+    m_isPoisoned=false;         //+ //初始时均false,被相关子弹击中后一段时间受到相应伤害
+    m_maxHp=60;
+    m_currentHp=60;
+    m_walkingSpeed=3.0;         //这个值不能超过5.0，超过就会在某个航点卡住，不知道为啥
+    //这三个参数是怪兽属性
+    m_level=level;
+    m_rotationSprite=0.0;
+    m_pos=startWayPoint->pos();
+    m_destinationWayPoint=startWayPoint->nextWayPoint(); //注意这个初始化
+    m_game=game;
+}
+
+Enemy2::Enemy2(Waypoint *startWayPoint, MainWindow *game,int level /*= 1 */,
+               const QPixmap &sprite /* = QPixmap(":/image/enemy2.png") */,
+               int maxHp /* = 40 */,qreal walkingSpeed /*= 2.0 */)
+    :Enemy(startWayPoint,game,level,sprite,maxHp,walkingSpeed)
+{
+    m_active=false;             //注意这个初始化
+    m_isSlowed=false;
+    m_isPoisoned=false;         //+ //初始时均false,被相关子弹击中后一段时间受到相应伤害
+    m_maxHp=100;
+    m_currentHp=100;
+    m_walkingSpeed=2.5;
+    //这三个参数是怪兽属性
+    m_level=level;
+    m_rotationSprite=0.0;
+    m_pos=startWayPoint->pos();
+    m_destinationWayPoint=startWayPoint->nextWayPoint(); //注意这个初始化
+    m_game=game;
+}
+
+Enemy3::Enemy3(Waypoint *startWayPoint, MainWindow *game,int level /*= 1 */,
+               const QPixmap &sprite /* = QPixmap(":/image/enemy2.png") */,
+               int maxHp /* = 40 */,qreal walkingSpeed /*= 2.0 */)
+    :Enemy(startWayPoint,game,level,sprite,maxHp,walkingSpeed)
+{
+    m_active=false;             //注意这个初始化
+    m_isSlowed=false;
+    m_isPoisoned=false;         //+ //初始时均false,被相关子弹击中后一段时间受到相应伤害
+    m_maxHp=150;
+    m_currentHp=150;
+    m_walkingSpeed=2.0;
+    //这三个参数是怪兽属性
+    m_level=level;
+    m_rotationSprite=0.0;
+    m_pos=startWayPoint->pos();
+    m_destinationWayPoint=startWayPoint->nextWayPoint(); //注意这个初始化
+    m_game=game;
+}
+
+Enemy4::Enemy4(Waypoint *startWayPoint, MainWindow *game,int level /*= 1 */,
+               const QPixmap &sprite /* = QPixmap(":/image/enemy2.png") */,
+               int maxHp /* = 40 */,qreal walkingSpeed /*= 2.0 */)
+    :Enemy(startWayPoint,game,level,sprite,maxHp,walkingSpeed)
+{
+    m_active=false;             //注意这个初始化
+    m_isSlowed=false;
+    m_isPoisoned=false;         //+ //初始时均false,被相关子弹击中后一段时间受到相应伤害
+    m_maxHp=450;
+    m_currentHp=450;
+    m_walkingSpeed=1.5;
+    //这三个参数是怪兽属性
+    m_level=level;
+    m_rotationSprite=0.0;
+    m_pos=startWayPoint->pos();
+    m_destinationWayPoint=startWayPoint->nextWayPoint(); //注意这个初始化
+    m_game=game;
 }
 
 void Enemy::draw(QPainter *painter) const
@@ -56,8 +132,151 @@ void Enemy::draw(QPainter *painter) const
     painter->translate(m_pos);
     painter->rotate(m_rotationSprite);//这一步是之前的draw方法没有遇到过的，实现旋转
 
-    // 绘制敌人
-    painter->drawPixmap(offsetPoint, m_sprite);
+    // 绘制敌人 //# //添加了不同效果
+    if (!m_isSlowed && !m_isPoisoned) painter->drawPixmap(offsetPoint, m_sprite);
+    else if (m_isSlowed && !m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy1iced.png"));
+    else if (!m_isSlowed && m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy1poisoned.png"));
+    else if (m_isSlowed && m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy1iced&posioned.png"));
+    painter->restore();
+}
+
+void Enemy1::draw(QPainter *painter) const //重载 //可以适当调整血条的位置
+{
+    if (!m_active)
+        return;
+
+    painter->save();
+
+    //血条的长度
+    //两个方框，红色方框代表总生命，固定大小不变
+    //绿色方框代表当前剩余生命，受m_currentHp / m_maxHp的变化影响
+    //一看就是老塔防玩家了
+    QPoint healthBarPoint = m_pos + QPoint(-Health_Bar_Width / 2 - 5, -ms_fixedSize.height() / 3) - QPoint(0,20);//最后一个参数是血条偏移
+    // 绘制血条
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(Qt::red);
+    QRect healthBarBackRect(healthBarPoint, QSize(Health_Bar_Width, 2));
+    painter->drawRect(healthBarBackRect);
+
+    painter->setBrush(Qt::green);
+    QRect healthBarRect(healthBarPoint, QSize((double)m_currentHp / m_maxHp * Health_Bar_Width, 2));
+    painter->drawRect(healthBarRect);
+
+    // 绘制偏转坐标,由中心+偏移=左上
+    static const QPoint offsetPoint(-ms_fixedSize.width() / 2, -ms_fixedSize.height() / 2);
+    painter->translate(m_pos);
+    painter->rotate(m_rotationSprite);//这一步是之前的draw方法没有遇到过的，实现旋转
+
+    // 绘制敌人 //# //添加了不同效果
+    if (!m_isSlowed && !m_isPoisoned) painter->drawPixmap(offsetPoint, m_sprite);
+    else if (m_isSlowed && !m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy2iced.png"));
+    else if (!m_isSlowed && m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy2poisoned.png"));
+    else if (m_isSlowed && m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy2iced&poisoned.png"));
+    painter->restore();
+}
+
+void Enemy2::draw(QPainter *painter) const //重载 //可以适当调整血条的位置
+{
+    if (!m_active)
+        return;
+
+    painter->save();
+
+    //血条的长度
+    //两个方框，红色方框代表总生命，固定大小不变
+    //绿色方框代表当前剩余生命，受m_currentHp / m_maxHp的变化影响
+    //一看就是老塔防玩家了
+    QPoint healthBarPoint = m_pos + QPoint(-Health_Bar_Width / 2 - 5, -ms_fixedSize.height() / 3) - QPoint(0,20);//最后一个参数是血条偏移
+    // 绘制血条
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(Qt::red);
+    QRect healthBarBackRect(healthBarPoint, QSize(Health_Bar_Width, 2));
+    painter->drawRect(healthBarBackRect);
+
+    painter->setBrush(Qt::green);
+    QRect healthBarRect(healthBarPoint, QSize((double)m_currentHp / m_maxHp * Health_Bar_Width, 2));
+    painter->drawRect(healthBarRect);
+
+    // 绘制偏转坐标,由中心+偏移=左上
+    static const QPoint offsetPoint(-ms_fixedSize.width() / 2, -ms_fixedSize.height() / 2);
+    painter->translate(m_pos);
+    painter->rotate(m_rotationSprite);//这一步是之前的draw方法没有遇到过的，实现旋转
+
+    // 绘制敌人 //# //添加了不同效果
+    if (!m_isSlowed && !m_isPoisoned) painter->drawPixmap(offsetPoint, m_sprite);
+    else if (m_isSlowed && !m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy3iced.png"));
+    else if (!m_isSlowed && m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy3poisoned.png"));
+    else if (m_isSlowed && m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy3iced&poisoned.png"));
+    painter->restore();
+}
+
+void Enemy3::draw(QPainter *painter) const //重载 //可以适当调整血条的位置
+{
+    if (!m_active)
+        return;
+
+    painter->save();
+
+    //血条的长度
+    //两个方框，红色方框代表总生命，固定大小不变
+    //绿色方框代表当前剩余生命，受m_currentHp / m_maxHp的变化影响
+    //一看就是老塔防玩家了
+    QPoint healthBarPoint = m_pos + QPoint(-Health_Bar_Width / 2 - 5, -ms_fixedSize.height() / 3) - QPoint(0,20);//最后一个参数是血条偏移
+    // 绘制血条
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(Qt::red);
+    QRect healthBarBackRect(healthBarPoint, QSize(Health_Bar_Width, 2));
+    painter->drawRect(healthBarBackRect);
+
+    painter->setBrush(Qt::green);
+    QRect healthBarRect(healthBarPoint, QSize((double)m_currentHp / m_maxHp * Health_Bar_Width, 2));
+    painter->drawRect(healthBarRect);
+
+    // 绘制偏转坐标,由中心+偏移=左上
+    static const QPoint offsetPoint(-ms_fixedSize.width() / 2, -ms_fixedSize.height() / 2);
+    painter->translate(m_pos);
+    painter->rotate(m_rotationSprite);//这一步是之前的draw方法没有遇到过的，实现旋转
+
+    // 绘制敌人 //# //添加了不同效果
+    if (!m_isSlowed && !m_isPoisoned) painter->drawPixmap(offsetPoint, m_sprite);
+    else if (m_isSlowed && !m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy4iced.png"));
+    else if (!m_isSlowed && m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy4poisoned.png"));
+    else if (m_isSlowed && m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy4iced&poisoned.png"));
+    painter->restore();
+}
+
+void Enemy4::draw(QPainter *painter) const //重载 //可以适当调整血条的位置
+{
+    if (!m_active)
+        return;
+
+    painter->save();
+
+    //血条的长度
+    //两个方框，红色方框代表总生命，固定大小不变
+    //绿色方框代表当前剩余生命，受m_currentHp / m_maxHp的变化影响
+    //一看就是老塔防玩家了
+    QPoint healthBarPoint = m_pos + QPoint(-Health_Bar_Width / 2 - 5, -ms_fixedSize.height() / 3) - QPoint(0,20);//最后一个参数是血条偏移
+    // 绘制血条
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(Qt::red);
+    QRect healthBarBackRect(healthBarPoint, QSize(Health_Bar_Width, 2));
+    painter->drawRect(healthBarBackRect);
+
+    painter->setBrush(Qt::green);
+    QRect healthBarRect(healthBarPoint, QSize((double)m_currentHp / m_maxHp * Health_Bar_Width, 2));
+    painter->drawRect(healthBarRect);
+
+    // 绘制偏转坐标,由中心+偏移=左上
+    static const QPoint offsetPoint(-ms_fixedSize.width() / 2, -ms_fixedSize.height() / 2);
+    painter->translate(m_pos);
+    painter->rotate(m_rotationSprite);//这一步是之前的draw方法没有遇到过的，实现旋转
+
+    // 绘制敌人 //# //添加了不同效果
+    if (!m_isSlowed && !m_isPoisoned) painter->drawPixmap(offsetPoint, m_sprite);
+    else if (m_isSlowed && !m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy5iced.png"));
+    else if (!m_isSlowed && m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy5poisoned.png"));
+    else if (m_isSlowed && m_isPoisoned) painter->drawPixmap(offsetPoint, QPixmap(":/image/enemy5iced&poisoned.png"));
     painter->restore();
 }
 
@@ -96,6 +315,7 @@ void Enemy::move()
         //引入一个timer控制冰冻时间
         QTimer *frozentimer = new QTimer();
         frozentimer->setInterval(2000);//被冰冻的时间
+        frozentimer->setSingleShot(true);//只触发一次
         connect(frozentimer,SIGNAL(timeout()),this,SLOT(SpeedUp()));
         frozentimer->start();
         qreal movementSpeed = 0.3 * m_walkingSpeed;
@@ -145,26 +365,18 @@ void Enemy::getDamage(int damage)
     }
 }
 
-void Enemy::getRemoved()//++ //加上了中毒效果，此处需要修改逻辑 //好像并没有找到正确的逻辑解决中毒bug...
+void Enemy::getRemoved()//++ //加上了中毒效果，此处需要修改逻辑 //好像并没有找到正确的逻辑解决中毒bug... //++解决了!
 {
-    if (m_attackedTowersList.empty() && m_currentHp>0 )
-        return;
+//    if (m_attackedTowersList.empty() && m_currentHp>0 )
+//        return;
 
-    if (m_currentHp<=0 && m_isPoisoned==1)
-    {
-//        foreach (Tower *attacker, m_attackedTowersList)
-//            attacker->targetKilled();
-//        // 通知game,此敌人已经阵亡
+//    if (m_currentHp<=0)
+//    {
+        foreach (Tower *attacker, m_attackedTowersList)
+            attacker->targetKilled();
+        // 通知game,此敌人已经阵亡
         m_game->removedEnemy(this);
-    }
-
-    else if (m_currentHp<=0 && m_isPoisoned==0)
-    {
-                foreach (Tower *attacker, m_attackedTowersList)
-                    attacker->targetKilled();
-                // 通知game,此敌人已经阵亡
-                m_game->removedEnemy(this);
-    }
+//    }
 }
 
 void Enemy::getAttacked(Tower *attacker)
@@ -213,6 +425,14 @@ void Enemy::CurePoison()//+ //中毒解除 //槽函数
 void Enemy::getPoisonDamage()//+ //中毒伤害 //槽函数
 {
     m_currentHp -= 10;
+    if (m_currentHp<=0)
+    {
+        foreach (Tower *attacker, m_attackedTowersList)
+            attacker->targetKilled();
+        // 通知game,此敌人已经阵亡
+        m_game->awardGold(200);
+        m_game->removedEnemy(this);
+    }//++ //解决了中毒效果会导致负血出现的问题
 }
 
 void Enemy::doActivate()
@@ -222,3 +442,11 @@ void Enemy::doActivate()
 //调用这个槽函数之后，enemy才可以行动
 
 Enemy::~Enemy(){}
+
+Enemy1::~Enemy1(){}
+
+Enemy2::~Enemy2(){}
+
+Enemy3::~Enemy3(){}
+
+Enemy4::~Enemy4(){}

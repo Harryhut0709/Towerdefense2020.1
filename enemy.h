@@ -31,7 +31,7 @@ public:
     virtual void setLevel(int level);               //设置怪兽等级
     virtual int  getCurrentHp() const;              //+ //判断是被打死了还是走到基地了，加声音
 
-    //未实现
+    //已实现
     void slowDown();                                //被icebullet击中，修改m_isSlowed的值为1
     void getPoisoned();                             //被poisonbullet击中，怪兽一段时间的持续伤害
     //+
@@ -65,6 +65,50 @@ protected://为继承做准备
     static const QSize ms_fixedSize;
 signals:
 
+};
+
+class Enemy1:public Enemy //++
+{
+    Q_OBJECT//所有应用QT槽的类都需要声明
+public:
+    Enemy1(Waypoint *startWayPoint, MainWindow *game,int level = 1,
+           const QPixmap &sprite = QPixmap(":/image/enemy2.png"),
+           int maxHp = 40,qreal walkingSpeed = 2.0);
+    void draw(QPainter *painter) const;     //画怪兽 //++
+    ~Enemy1();
+};
+
+class Enemy2:public Enemy //++
+{
+    Q_OBJECT//所有应用QT槽的类都需要声明
+public:
+    Enemy2(Waypoint *startWayPoint, MainWindow *game,int level = 1,
+           const QPixmap &sprite = QPixmap(":/image/enemy3.png"),
+           int maxHp = 40,qreal walkingSpeed = 2.0);
+    void draw(QPainter *painter) const;     //画怪兽 //++
+    ~Enemy2();
+};
+
+class Enemy3:public Enemy //++
+{
+    Q_OBJECT//所有应用QT槽的类都需要声明
+public:
+    Enemy3(Waypoint *startWayPoint, MainWindow *game,int level = 1,
+           const QPixmap &sprite = QPixmap(":/image/enemy4.png"),
+           int maxHp = 40,qreal walkingSpeed = 2.0);
+    void draw(QPainter *painter) const;     //画怪兽 //++
+    ~Enemy3();
+};
+
+class Enemy4:public Enemy //++
+{
+    Q_OBJECT//所有应用QT槽的类都需要声明
+public:
+    Enemy4(Waypoint *startWayPoint, MainWindow *game,int level = 1,
+           const QPixmap &sprite = QPixmap(":/image/enemy5.png"),
+           int maxHp = 40,qreal walkingSpeed = 2.0);
+    void draw(QPainter *painter) const;     //画怪兽 //++
+    ~Enemy4();
 };
 
 #endif // ENEMY_H

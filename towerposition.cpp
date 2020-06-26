@@ -8,7 +8,7 @@
 const QSize TowerPosition::ms_fixedSize(100,50);
 
 TowerPosition::TowerPosition(QPoint pos, const QPixmap & sprite /*= QPixmap(":/image/towerplant.png")*/)
-    :m_pos(pos),m_hasTower(false),m_sprite(sprite){};
+    :m_pos(pos),m_hasTower(false),m_sprite(sprite),m_sprite1(":/image/towerplant1.png"){};
 
 const QPoint TowerPosition::centerPos() const
 {
@@ -36,6 +36,11 @@ void TowerPosition::setHasTower(bool hasTower/* = true*/)
 void TowerPosition::draw(QPainter *painter) const
 {
     painter->drawPixmap(m_pos.x(), m_pos.y(), m_sprite);
+}
+
+void TowerPosition::draw1(QPainter *painter) const
+{
+    painter->drawPixmap(m_pos.x(), m_pos.y(), m_sprite1);
 }
 
 //之后所有对象信息几乎都会包含这三个：坐标点、尺寸大小、图片信息，管理也都集中放在容器交给mainwindow管理

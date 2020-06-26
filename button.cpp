@@ -10,3 +10,5 @@ Button::Button(QString pics): QPushButton(0)
     this->setIcon(pixmap);
     this->setIconSize(QSize(pixmap.width(),pixmap.height()));
 }
+
+Button::~Button(){}
